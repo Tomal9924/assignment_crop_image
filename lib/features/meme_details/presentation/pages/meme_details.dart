@@ -1,14 +1,20 @@
-import 'package:image_cropper/image_cropper.dart';
+import 'package:croppy/croppy.dart';
 import 'package:memes_life/features/memes/memes.dart';
 
 import '../../../../core/shared/shared.dart';
 
-class MemeDetailsPage extends StatelessWidget {
+class MemeDetailsPage extends StatefulWidget {
   static const String path = '/meme-details';
   static const String name = 'MemeDetailsPage';
   final MemesEntity meme;
   const MemeDetailsPage({super.key, required this.meme});
 
+  @override
+  State<MemeDetailsPage> createState() => _MemeDetailsPageState();
+}
+
+class _MemeDetailsPageState extends State<MemeDetailsPage> {
+  late CropImageResult? imageCropResult;
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ThemeBloc, ThemeState>(
@@ -22,7 +28,7 @@ class MemeDetailsPage extends StatelessWidget {
             automaticallyImplyLeading: true,
             iconTheme: IconThemeData(color: theme.textPrimary),
             title: Text(
-              meme.name,
+              widget.meme.name,
               style: TextStyles.title(context: context, color: theme.textPrimary),
             ),
           ),
@@ -32,19 +38,19 @@ class MemeDetailsPage extends StatelessWidget {
               SizedBox(
                 height: 400,
                 width: context.width,
-                child: CachedNetworkImage(
-                  imageUrl: meme.url,
+                child: imageCropResult == null ? CachedNetworkImage(
+                  imageUrl: widget.meme.url,
                   fit: BoxFit.cover,
                   alignment: Alignment.center,
                   progressIndicatorBuilder: (context, url, downloadProgress) => Center(
                     child: CircularProgressIndicator(value: downloadProgress.progress),
                   ),
                   errorWidget: (context, url, error) => const Icon(Icons.error),
-                ),
+                ): Container(),
               ),
               const SizedBox(height: 16),
               Text(
-                meme.name,
+                widget.meme.name,
                 style: TextStyles.title(context: context, color: Colors.black),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -60,8 +66,14 @@ class MemeDetailsPage extends StatelessWidget {
                       foregroundColor: theme.textPrimary,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
-                    onPressed: () {
-                      cropImage(meme.url);
+                    onPressed: () async {
+                      final result = await showCupertinoImageCropper(
+                        context,
+                        imageProvider: NetworkImage(widget.meme.url),
+                      );
+                      setState(() {
+                        imageCropResult = result;
+                      });
                     },
                     label: const Text("Crop"),
                     icon: const Icon(Icons.crop),
@@ -94,35 +106,5 @@ class MemeDetailsPage extends StatelessWidget {
         );
       },
     );
-  }
-
-  Future<void> cropImage(String path) async {
-    
-      await ImageCropper().cropImage(
-        sourcePath: path,
-        compressFormat: ImageCompressFormat.jpg,
-        compressQuality: 100,
-        uiSettings: [
-          AndroidUiSettings(
-            toolbarTitle: 'Cropper',
-            toolbarColor: Colors.deepOrange,
-            toolbarWidgetColor: Colors.white,
-            initAspectRatio: CropAspectRatioPreset.square,
-            lockAspectRatio: false,
-            aspectRatioPresets: [
-              CropAspectRatioPreset.original,
-              CropAspectRatioPreset.square,
-              CropAspectRatioPreset.ratio4x3,
-              CropAspectRatioPreset.ratio16x9,
-            ],
-          ),
-        ],
-      );
-      // if (croppedFile != null) {
-      //   setState(() {
-      //     _croppedFile = croppedFile;
-      //   });
-      // }
-    
   }
 }
