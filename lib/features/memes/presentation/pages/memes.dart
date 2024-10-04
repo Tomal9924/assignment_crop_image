@@ -2,6 +2,7 @@ import 'package:memes_life/features/meme_details/meme_details.dart';
 import 'package:memes_life/features/memes/memes.dart';
 
 import '../../../../core/shared/shared.dart';
+import '../../../search/presentation/pages/search.dart';
 import '../bloc/read_bloc/read_bloc.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -63,32 +64,44 @@ class SearchField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Form(
-      child: TextFormField(
-        onChanged: (value) {},
-        decoration: InputDecoration(
-          filled: true,
-          hintStyle:
-              TextStyles.caption(context: context, color: Colors.grey.shade600),
-          fillColor: const Color(0xFF979797).withOpacity(0.1),
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          border: const OutlineInputBorder(
-            borderRadius: BorderRadius.all(Radius.circular(12)),
-            borderSide: BorderSide.none,
-          ),
-          focusedBorder: const OutlineInputBorder(
-            borderRadius: BorderRadius.all(Radius.circular(12)),
-            borderSide: BorderSide.none,
-          ),
-          enabledBorder: const OutlineInputBorder(
-            borderRadius: BorderRadius.all(Radius.circular(12)),
-            borderSide: BorderSide.none,
-          ),
-          hintText: "Search memes",
-          prefixIcon: const Icon(Icons.search),
-        ),
-      ),
+    return BlocBuilder<ReadBloc, ReadState>(
+      builder: (context, state) {
+        if (state is ReadDone) {
+          return InkWell(
+            onTap: () {
+              showSearch(
+                context: context,
+                delegate: CustomSearchDelegate(
+                  memes: state.memes,
+                ),
+              );
+            },
+            child: Container(
+              height: 48,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              width: context.width,
+              decoration: BoxDecoration(
+                color: const Color(0xFF979797).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.search_rounded, color: Colors.black),
+                  const SizedBox(width: 8),
+                  Text(
+                    "Search",
+                    style: TextStyles.caption(
+                            context: context, color: Colors.black)
+                        .copyWith(letterSpacing: 2.25),
+                  ),
+                ],
+              ),
+            ),
+          );
+        } else {
+          return const SizedBox();
+        }
+      },
     );
   }
 }
@@ -189,7 +202,8 @@ class ProductCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               meme.name,
-              style: TextStyles.title(context: context, color: Colors.black),
+              style: TextStyles.title(context: context, color: Colors.black)
+                  .copyWith(letterSpacing: 2.25),
               maxLines: 2,
             ),
           ],

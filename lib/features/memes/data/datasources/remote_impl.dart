@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import '../../../../core/shared/constants.dart';
 import '../../../../core/shared/shared.dart';
 import '../../memes.dart';
